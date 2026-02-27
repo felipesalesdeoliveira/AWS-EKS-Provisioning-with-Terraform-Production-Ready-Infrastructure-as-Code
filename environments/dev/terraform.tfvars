@@ -3,9 +3,9 @@ environment  = "dev"
 aws_region   = "us-east-1"
 
 vpc_cidr             = "10.10.0.0/16"
-az_count             = 1
-public_subnet_cidrs  = ["10.10.1.0/24"]
-private_subnet_cidrs = ["10.10.11.0/24"]
+az_count             = 2
+public_subnet_cidrs  = ["10.10.1.0/24","10.10.2.0/24"]
+private_subnet_cidrs = ["10.10.11.0/24","10.10.12.0/24"]
 single_nat_gateway   = true
 enable_nat_gateway    = false
 
