@@ -13,6 +13,11 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
+variable "node_subnet_ids" {
+  description = "Subnet IDs used by worker nodes."
+  type        = list(string)
+}
+
 variable "cluster_security_group_id" {
   description = "Security group ID for EKS control plane."
   type        = string

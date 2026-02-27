@@ -3,8 +3,9 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
-  azs         = slice(data.aws_availability_zones.available.names, 0, var.az_count)
+  name_prefix     = "${var.project_name}-${var.environment}"
+  azs             = slice(data.aws_availability_zones.available.names, 0, var.az_count)
+  node_subnet_ids = var.use_public_node_subnets ? module.vpc.public_subnet_ids : module.vpc.private_subnet_ids
 }
 
 module "vpc" {
@@ -16,6 +17,7 @@ module "vpc" {
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   single_nat_gateway   = var.single_nat_gateway
+  enable_nat_gateway   = var.enable_nat_gateway
   cluster_name         = var.cluster_name
 }
 
@@ -34,6 +36,7 @@ module "eks" {
   cluster_name                 = var.cluster_name
   kubernetes_version           = var.kubernetes_version
   private_subnet_ids           = module.vpc.private_subnet_ids
+  node_subnet_ids              = local.node_subnet_ids
   cluster_security_group_id    = module.security.cluster_security_group_id
   node_security_group_id       = module.security.node_security_group_id
   endpoint_private_access      = var.endpoint_private_access

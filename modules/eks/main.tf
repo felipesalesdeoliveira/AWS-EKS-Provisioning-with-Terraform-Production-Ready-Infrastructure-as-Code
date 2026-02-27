@@ -98,7 +98,7 @@ resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = var.node_group_name
   node_role_arn   = aws_iam_role.node_group.arn
-  subnet_ids      = var.private_subnet_ids
+  subnet_ids      = var.node_subnet_ids
   ami_type        = var.node_ami_type
   capacity_type   = var.node_capacity_type
   disk_size       = var.node_disk_size

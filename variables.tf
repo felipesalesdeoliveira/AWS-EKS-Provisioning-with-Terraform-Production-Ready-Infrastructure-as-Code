@@ -41,6 +41,12 @@ variable "single_nat_gateway" {
   default     = true
 }
 
+variable "enable_nat_gateway" {
+  description = "Whether to create NAT Gateway resources."
+  type        = bool
+  default     = true
+}
+
 variable "cluster_name" {
   description = "EKS cluster name."
   type        = string
@@ -73,6 +79,12 @@ variable "endpoint_public_access_cidrs" {
 variable "node_group_name" {
   description = "EKS managed node group name."
   type        = string
+}
+
+variable "use_public_node_subnets" {
+  description = "If true, node group will use public subnets instead of private subnets."
+  type        = bool
+  default     = false
 }
 
 variable "node_instance_types" {

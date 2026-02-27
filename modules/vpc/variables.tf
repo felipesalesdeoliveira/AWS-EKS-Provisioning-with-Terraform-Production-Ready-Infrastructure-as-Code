@@ -29,6 +29,11 @@ variable "single_nat_gateway" {
   default     = true
 }
 
+variable "enable_nat_gateway" {
+  description = "If true, create NAT Gateway resources."
+  type        = bool
+  default     = true
+}
 variable "cluster_name" {
   description = "EKS cluster name used for subnet tags."
   type        = string
