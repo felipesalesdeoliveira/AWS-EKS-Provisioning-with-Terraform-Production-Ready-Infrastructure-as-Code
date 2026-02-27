@@ -1,3 +1,9 @@
+locals {
+  nat_gateway_subnet_map = var.enable_nat_gateway ? (
+    var.single_nat_gateway ? { "0" = 0 } : { for idx in range(length(var.public_subnet_cidrs)) : tostring(idx) => idx }
+  ) : {}
+}
+
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -46,25 +52,25 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_eip" "nat" {
-  count  = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.public_subnet_cidrs)) : 0
+  for_each = local.nat_gateway_subnet_map
 
   domain = "vpc"
 
   tags = {
-    Name = "${var.name_prefix}-nat-eip-${count.index + 1}"
+    Name = "${var.name_prefix}-nat-eip-${each.value + 1}"
   }
 }
 
 resource "aws_nat_gateway" "this" {
-  count = var.single_nat_gateway ? 1 : length(var.public_subnet_cidrs)
+  for_each = local.nat_gateway_subnet_map
 
-  allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public[count.index].id
+  allocation_id = aws_eip.nat[each.key].id
+  subnet_id     = aws_subnet.public[each.value].id
 
   depends_on = [aws_internet_gateway.this]
 
   tags = {
-    Name = "${var.name_prefix}-nat-${count.index + 1}"
+    Name = "${var.name_prefix}-nat-${each.value + 1}"
   }
 }
 
@@ -91,14 +97,14 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table" "private" {
   count  = length(aws_subnet.private)
   vpc_id = aws_vpc.this.id
+}
 
-  dynamic "route" {
-    for_each = var.enable_nat_gateway ? [1] : []
-    content {
-      cidr_block     = "0.0.0.0/0"
-      nat_gateway_id = aws_nat_gateway.this[var.single_nat_gateway ? 0 : count.index].id
-    }
-  }
+resource "aws_route" "private_nat_default" {
+  count = var.enable_nat_gateway ? length(aws_subnet.private) : 0
+
+  route_table_id         = aws_route_table.private[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = var.single_nat_gateway ? aws_nat_gateway.this["0"].id : aws_nat_gateway.this[tostring(count.index)].id
 }
 
 resource "aws_route_table_association" "private" {
